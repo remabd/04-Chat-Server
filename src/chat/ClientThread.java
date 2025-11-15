@@ -30,7 +30,6 @@ public class ClientThread extends Thread {
       this.outchan = new DataOutputStream(this.client.getOutputStream());
       this.usernameChoice();
       this.channelChoice();
-
       String line;
       do {
         System.out.println("into run");
@@ -42,12 +41,6 @@ public class ClientThread extends Thread {
     } catch (IOException e) {
       e.printStackTrace();
     }
-  }
-
-  private void sendMessage(String line) {
-    String message = this.name + ": " + line + "\n";
-    Main.clients.stream().forEach(client -> client.display(message));
-    System.out.println(message);
   }
 
   private void usernameChoice() {
@@ -73,16 +66,17 @@ public class ClientThread extends Thread {
         this.outchan.writeChars("Vous rentrez dans le channel " + this.channel + "\n");
         Main.channels.add(this.channel);
       } else {
-        this.outchan.writeChars("veuillez choisir une room parmis: \n");
+        this.outchan.writeChars("veuillez choisir une room (entrez un autre nom pour créer une room): \n");
         this.outchan.writeChars(Main.channels.toString() + "\n");
-        do {
-          line = this.bs.readLine();
-          if (Main.channels.contains(line)) {
-            this.channel = line;
-            this.outchan.writeChars("Vous entrez dans le channel " + this.channel +
-                "\n");
-          }
-        } while (!(this.channel.length() == 0));
+        line = this.bs.readLine();
+        if (Main.channels.contains(line)) {
+          this.channel = line;
+          this.outchan.writeChars("Vous entrez dans le channel " + this.channel + "\n");
+        } else {
+          this.channel = line;
+          this.outchan.writeChars("Vous rentrez dans le channel " + this.channel + "\n");
+          Main.channels.add(this.channel);
+        }
       }
     } catch (IOException e) {
       e.printStackTrace();
@@ -95,6 +89,14 @@ public class ClientThread extends Thread {
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  private void sendMessage(String line) {
+    String message = this.name + ": " + line + "\n";
+    Main.clients.stream()
+        .filter(client -> client.getChannel().equals(this.channel))
+        .forEach(client -> client.display(message));
+    System.out.println(message);
   }
 
   public String getChannel() {
