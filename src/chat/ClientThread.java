@@ -4,6 +4,7 @@ import java.net.Socket;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.classfile.CodeBuilder.CatchBuilder;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -13,48 +14,28 @@ public class ClientThread extends Thread {
   private String name;
   private BufferedReader bs;
   private DataOutputStream outchan;
-  // private ClientController clientController;
-  public static final String CLEAR_LINE = "\033[2K"; // Clear entire line
-  public static final String CURSOR_UP = "\033[1A"; // Move cursor up 1 line
-  public static final String CURSOR_START = "\r"; // Return to start of line
+  private String channel;
 
   public ClientThread(Socket s) {
     this.client = s;
     this.name = "";
-    // this.clientController = cc;
-  }
-
-  private void initialize() {
-    try {
-      System.out.println("New user connected, waiting for name attribution");
-      String line;
-      boolean finis = false;
-      this.outchan.writeChars("Bienvenue, entrez votre pseudo:\n");
-      do {
-        line = this.bs.readLine();
-        if (line.length() > 0) {
-          finis = true;
-          this.name = line;
-          this.outchan.writeChars("Bonjour " + line + "\n");
-          // this.outchan.writeChars("confirmez vous votre pseudo: " + line + "(Y/n)");
-        }
-      } while (!finis);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    this.channel = "";
   }
 
   public void run() {
+    System.out.println("New user connected, waiting for name attribution");
     try {
       InputStream is = this.client.getInputStream();
       this.bs = new BufferedReader(new InputStreamReader(is));
       this.outchan = new DataOutputStream(this.client.getOutputStream());
-      this.initialize();
+      this.usernameChoice();
+      this.channelChoice();
+
       String line;
       do {
+        System.out.println("into run");
         line = this.bs.readLine();
         this.sendMessage(line);
-        System.out.print(CURSOR_UP + CURSOR_START + CLEAR_LINE);
         System.out.println(line);
       } while (line != "exit");
       client.close();
@@ -69,11 +50,54 @@ public class ClientThread extends Thread {
     System.out.println(message);
   }
 
+  private void usernameChoice() {
+    try {
+      String line;
+      this.outchan.writeChars("Bienvenue, entrez votre pseudo:\n");
+      System.out.println("into username choice");
+      line = this.bs.readLine();
+      this.name = line;
+      this.outchan.writeChars("Bonjour " + line + "\n");
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private void channelChoice() {
+    try {
+      String line;
+      if (Main.channels.size() == 0) {
+        this.outchan.writeChars("Il n'y a actuellement aucun channel ouvert.\nNom de votre channel:\n");
+        line = this.bs.readLine();
+        this.channel = line;
+        this.outchan.writeChars("Vous rentrez dans le channel " + this.channel + "\n");
+        Main.channels.add(this.channel);
+      } else {
+        this.outchan.writeChars("veuillez choisir une room parmis: \n");
+        this.outchan.writeChars(Main.channels.toString() + "\n");
+        do {
+          line = this.bs.readLine();
+          if (Main.channels.contains(line)) {
+            this.channel = line;
+            this.outchan.writeChars("Vous entrez dans le channel " + this.channel +
+                "\n");
+          }
+        } while (!(this.channel.length() == 0));
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
   public void display(String message) {
     try {
       this.outchan.writeChars(message);
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  public String getChannel() {
+    return this.channel;
   }
 }

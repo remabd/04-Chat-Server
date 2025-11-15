@@ -14,6 +14,7 @@ import java.io.IOException;
 
 public class Main {
   public static ArrayList<ClientThread> clients = new ArrayList<>();
+  public static ArrayList<String> channels = new ArrayList<>();
 
   public static void main(String[] args) {
     int port = 5156;
