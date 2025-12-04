@@ -30,13 +30,11 @@ public class ClientThread extends Thread {
       this.outchan = new DataOutputStream(this.client.getOutputStream());
       this.usernameChoice();
       this.channelChoice();
-      String line;
-      do {
-        System.out.println("into run");
+      String line = "";
+      while (!line.equals("exit")) {
         line = this.bs.readLine();
         this.sendMessage(line);
-        System.out.println(line);
-      } while (line != "exit");
+      }
       client.close();
     } catch (IOException e) {
       e.printStackTrace();
@@ -47,7 +45,6 @@ public class ClientThread extends Thread {
     try {
       String line;
       this.outchan.writeChars("Bienvenue, entrez votre pseudo:\n");
-      System.out.println("into username choice");
       line = this.bs.readLine();
       this.name = line;
       this.outchan.writeChars("Bonjour " + line + "\n");
@@ -96,7 +93,6 @@ public class ClientThread extends Thread {
     Main.clients.stream()
         .filter(client -> client.getChannel().equals(this.channel))
         .forEach(client -> client.display(message));
-    System.out.println(message);
   }
 
   public String getChannel() {
