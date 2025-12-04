@@ -1,6 +1,7 @@
 # 04-Chat
 
-Chatting server for talking
+Ce repository implémente un serveur socket en Java, il permet la connexion en simultannée de plusieurs membres, peut les répartir en plusieurs channels et broadcast les messages au sein d'un channel.
+Ce repository fonctionne en pair avec [04-Chat-Client](https://github.com/remabd/04-Chat-Client)
 
 # Build and run
 
