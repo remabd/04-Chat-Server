@@ -90,9 +90,12 @@ public class ClientThread extends Thread {
 
   private void sendMessage(String line) {
     String message = this.name + ": " + line + "\n";
+    String selfMessage = "you: " + line + "\n";
     Main.clients.stream()
         .filter(client -> client.getChannel().equals(this.channel))
+        .filter(client -> !client.equals(this))
         .forEach(client -> client.display(message));
+    this.display(selfMessage);
   }
 
   public String getChannel() {
